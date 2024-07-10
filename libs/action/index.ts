@@ -140,7 +140,11 @@ export const addStepsBoost = async (numClicks: number = 1) => {
         user.tokens += user.perClick * numClicks * 5;
         await user.save();
         revalidatePath('/', "page");
-        return true;
+        return {
+            tokens: user.tokens,
+            energyLimit: user.energyLimit,
+            maxEnergyLimit: user.maxEnergyLimit,
+        };
     } catch (error) {
         return;
     }

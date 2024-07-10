@@ -68,6 +68,7 @@ const ClickComponent: React.FC<ClickComponentProps> = ({ user, taps }) => {
                 }
 
                 if (result) {
+
                     setTokens(result.tokens);
                     updateEnergyAndProgress(result.energyLimit);
                 }
