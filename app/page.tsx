@@ -8,8 +8,8 @@ import { Suspense } from "react";
 
 export default async function Home() {
 
-  // const cookie: any = await cookies().get("chat");
-  const cookie: any = await cookies().get("chat") || 5195131141;
+  const cookie: any = await cookies().get("chat");
+  // const cookie: any = await cookies().get("chat") || 5195131141;
 
   const taps: any = await cookies().get('taps')?.value || "false"
 

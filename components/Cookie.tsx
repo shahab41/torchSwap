@@ -8,8 +8,8 @@ const Cookie = () => {
 
     const searchParams = useSearchParams();
 
-    // const search: any = searchParams.get("user")!;
-    const search: any = searchParams.get("user")! || 5195131141;
+    const search: any = searchParams.get("user")!;
+    // const search: any = searchParams.get("user")! || 5195131141;
 
     useEffect(() => {
         const setCookie = async () => {
