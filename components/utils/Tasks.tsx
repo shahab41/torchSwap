@@ -2,7 +2,7 @@
 
 import { claimInviteTask, claimLeaguesTask } from '@/libs/action';
 import { leaguesTasks as initialLeaguesTasks, referalTasks } from '@/libs/data';
-import { LinearProgress } from '@mui/material';
+import { LinearProgress, CircularProgress } from '@mui/material';
 import Image from 'next/image';
 import React, { Suspense, useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
@@ -20,6 +20,7 @@ const Tasks: React.FC<TasksProps> = ({ user, tasks }) => {
     const [claimedTasks, setClaimedTasks] = useState<string[]>(userData?.claimedInviteTasks.map((task: any) => task.task));
     const [userTokens, setUserTokens] = useState<number>(userData.tokens);
     const [leaguesTasks, setLeaguesTasks] = useState(initialLeaguesTasks);
+    const [loadingTask, setLoadingTask] = useState<string | null>(null); // State to track the loading task
 
     useEffect(() => {
         // Filter out already claimed league tasks on initial render
@@ -27,6 +28,7 @@ const Tasks: React.FC<TasksProps> = ({ user, tasks }) => {
     }, [claimedTasks]);
 
     const handleClaim = async (taskId: string) => {
+        setLoadingTask(taskId); // Set the loading task
         try {
             const result = await claimInviteTask(taskId) as any;
 
@@ -39,10 +41,13 @@ const Tasks: React.FC<TasksProps> = ({ user, tasks }) => {
             }
         } catch (error) {
             console.error("Error claiming task:", error);
+        } finally {
+            setLoadingTask(null); // Reset the loading task
         }
     };
 
     const handleLeagueClaim = async (taskId: string) => {
+        setLoadingTask(taskId); // Set the loading task
         try {
             const result = await claimLeaguesTask(taskId) as any;
 
@@ -56,9 +61,10 @@ const Tasks: React.FC<TasksProps> = ({ user, tasks }) => {
             }
         } catch (error) {
             console.error("Error claiming task:", error);
+        } finally {
+            setLoadingTask(null); // Reset the loading task
         }
     };
-
 
     return (
         <Suspense>
@@ -97,9 +103,11 @@ const Tasks: React.FC<TasksProps> = ({ user, tasks }) => {
                                             <button
                                                 className='bg-yellow-500 text-white py-1 px-3 text-sm rounded-2xl disabled:bg-gray-400 disabled:text-white'
                                                 onClick={() => handleClaim(e.taskId)}
-                                                disabled={!canClaim}
+                                                disabled={!canClaim || loadingTask === e.taskId}
                                             >
-                                                {"Claim"}
+                                                {loadingTask === e.taskId ? (
+                                                    <CircularProgress size={24} color="inherit" />
+                                                ) : "Claim"}
                                             </button>
                                         </div>
                                         <div className='mt-4 mb-1'>
@@ -155,9 +163,11 @@ const Tasks: React.FC<TasksProps> = ({ user, tasks }) => {
                                             <button
                                                 className='bg-yellow-500 text-white py-1 px-3 text-sm rounded-2xl disabled:bg-gray-400 disabled:text-white'
                                                 onClick={() => handleLeagueClaim(e.taskId)}
-                                                disabled={!canClaim}
+                                                disabled={!canClaim || loadingTask === e.taskId}
                                             >
-                                                {"Claim"}
+                                                {loadingTask === e.taskId ? (
+                                                    <CircularProgress size={24} color="inherit" />
+                                                ) : "Claim"}
                                             </button>
                                         </div>
                                         <div className='mt-4 mb-1'>
