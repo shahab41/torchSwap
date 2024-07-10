@@ -1,0 +1,155 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+body {
+  @apply bg-black;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+  letter-spacing: 0.3px;
+}
+
+.box_condition {
+  display: flex;
+}
+
+@media (max-width : 900px) {
+  .box_condition {
+    flex-direction: column;
+    padding-top: 40px;
+  }
+
+  .box_condition>div {
+    justify-content: center;
+  }
+}
+
+.animated_card {
+  animation: float 5s linear infinite;
+}
+
+.shadow_gradient_pink {
+  box-shadow: 10px 10px 170px -10px #fc67fa;
+}
+
+.shadow_gradient_blue {
+  box-shadow: 10px 10px 120px -15px #67cffc;
+}
+
+.heading {
+  @apply text-lg mx-auto text-center px-3 text-gray-900 w-[250px] py-2 border-b-4 border-yellow-600 font-semibold bg-yellow-300 rounded-3xl cursor-pointer;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  25% {
+    transform: translateY(10px);
+  }
+
+  50% {
+    transform: translateY(0px);
+  }
+
+  75% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.blue__gradient {
+  background: linear-gradient(180deg, rgba(188, 165, 255, 0) 0%, #214d76 100%);
+  filter: blur(123px);
+  z-index: -1;
+}
+
+.pink__gradient {
+  background: linear-gradient(90deg, #f4c4f3 0%, #fce23d 100%);
+  filter: blur(250px);
+  z-index: -1;
+}
+
+.black__gradient {
+  background: linear-gradient(90deg, #6a3401 30%, #fdcf01 70%);
+  filter: blur(200px);
+  z-index: -1;
+}
+
+.white__gradient {
+  background: rgba(255, 128, 0, 0.6);
+  filter: blur(150px);
+  z-index: -1;
+}
+
+.purple__gradient {
+  background: rgba(106, 0, 255, 0.6);
+  filter: blur(150px);
+  z-index: -1;
+}
+
+
+.blurry {
+  background: rgba(0, 0, 0, 0.142);
+  backdrop-filter: blur(10px);
+  backface-visibility: hidden;
+}
+
+.blurryTxt {
+  background-color: #ff00eaac;
+  backdrop-filter: blur(10px);
+  backface-visibility: hidden;
+}
+
+.h2-heading {
+  @apply text-3xl font-bold;
+  letter-spacing: 1px;
+  color: #c96d7d;
+  background-image: -webkit-linear-gradient(0deg, #c96d7d 26%, #e86f71 21%, #c40892 54%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  text-fill-color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+
+.mix-head {
+  @apply text-4xl font-extrabold text-white;
+  letter-spacing: 1px;
+}
+
+.mix-head>span {
+  @apply text-yellow-400;
+}
+
+@keyframes squeeze {
+
+  0%,
+  100% {
+    transform: skewX(0);
+    transform: skewY(0);
+  }
+
+  50% {
+    transform: skewX(10deg);
+    transform: skewY(10deg);
+  }
+}
+
+.squeeze-animation {
+  animation: squeeze 0.1s ease-in-out;
+}
