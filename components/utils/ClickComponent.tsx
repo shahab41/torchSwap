@@ -2,7 +2,7 @@
 
 import { addStepsInDatabase, rechargeUserEnergy, addStepsBoost } from '@/libs/action';
 import Image from 'next/image';
-import React, { useState, useRef, useEffect, useCallback, Suspense } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import LinearProgress from '@mui/material/LinearProgress';
 import Link from 'next/link';
 import LevelText from './LevelText';
@@ -32,17 +32,18 @@ const ClickComponent: React.FC<ClickComponentProps> = ({ user, taps }) => {
     const pendingUpdatesRef = useRef<number>(0);
     const tapQueueRef = useRef<{ x: number; y: number; energyRequired: number }[]>([]);
     const timeoutRef = useRef<number | null>(null);
-    const rechargeIntervalRef = useRef<number | null>(null);
+    const rechargeTimeoutRef = useRef<number | null>(null);
+
+    const updateEnergyAndProgress = useCallback((newEnergyLimit: number) => {
+        setEnergyLimit(newEnergyLimit);
+        setProgress((newEnergyLimit / userData?.maxEnergyLimit) * 100);
+    }, [userData?.maxEnergyLimit]);
 
     const processTapQueue = useCallback(async () => {
         while (tapQueueRef.current.length > 0 && (energyLimit > 0 || isBoosterActive)) {
             const { x, y, energyRequired } = tapQueueRef.current.shift()!;
             if (energyLimit >= energyRequired || isBoosterActive) {
-                setEnergyLimit(prev => {
-                    const newEnergyLimit = isBoosterActive ? prev : prev - energyRequired;
-                    setProgress((newEnergyLimit / userData?.maxEnergyLimit) * 100);
-                    return newEnergyLimit;
-                });
+                updateEnergyAndProgress(isBoosterActive ? energyLimit : energyLimit - energyRequired);
                 pendingUpdatesRef.current += 1;
                 setClicks(prev => [...prev, { click: userData?.perClick * (isBoosterActive ? 5 : 1), x, y }]);
             }
@@ -68,8 +69,7 @@ const ClickComponent: React.FC<ClickComponentProps> = ({ user, taps }) => {
 
                 if (result) {
                     setTokens(result.tokens);
-                    setEnergyLimit(result.energyLimit);
-                    setProgress((result.energyLimit / result.maxEnergyLimit) * 100);
+                    updateEnergyAndProgress(result.energyLimit);
                 }
                 pendingUpdatesRef.current = 0;
             }
@@ -78,42 +78,31 @@ const ClickComponent: React.FC<ClickComponentProps> = ({ user, taps }) => {
         }, 600);
 
         setTimeout(() => setIsAnimating(false), 500);
-    }, [energyLimit, userData?.maxEnergyLimit, isBoosterActive]);
+    }, [energyLimit, isBoosterActive, updateEnergyAndProgress]);
+
+    const fetchEnergyStatus = useCallback(async () => {
+        const status = await rechargeUserEnergy();
+        if (status) {
+            updateEnergyAndProgress(status.energyLimit);
+        }
+    }, [updateEnergyAndProgress]);
 
     useEffect(() => {
-        const fetchInitialEnergyStatus = async () => {
-            const status = await rechargeUserEnergy();
-            if (status) {
-                setEnergyLimit(status.energyLimit);
-                setProgress((status.energyLimit / status.maxEnergyLimit) * 100);
-                setTokens(userData?.tokens);
-            }
-        };
-
-        fetchInitialEnergyStatus();
-    }, []);
+        fetchEnergyStatus();
+    }, [fetchEnergyStatus]);
 
     useEffect(() => {
-        const fetchEnergyStatus = async () => {
-            const status = await rechargeUserEnergy();
-            if (status) {
-                setEnergyLimit(status.energyLimit);
-                setProgress((status.energyLimit / status.maxEnergyLimit) * 100);
-            }
-        };
-
         if (!isTapping && isRecharging) {
-            fetchEnergyStatus();
-            rechargeIntervalRef.current = window.setInterval(fetchEnergyStatus, 1000);
+            rechargeTimeoutRef.current = window.setTimeout(fetchEnergyStatus, 2000);
 
             return () => {
-                if (rechargeIntervalRef.current) {
-                    clearInterval(rechargeIntervalRef.current);
-                    rechargeIntervalRef.current = null;
+                if (rechargeTimeoutRef.current) {
+                    clearTimeout(rechargeTimeoutRef.current);
+                    rechargeTimeoutRef.current = null;
                 }
             };
         }
-    }, [isTapping, isRecharging]);
+    }, [isTapping, isRecharging, fetchEnergyStatus]);
 
     useEffect(() => {
         if (isBoosterActive) {
@@ -153,10 +142,12 @@ const ClickComponent: React.FC<ClickComponentProps> = ({ user, taps }) => {
             tapQueueRef.current.push({ x, y, energyRequired: userData?.perClick });
         });
 
-        processTapQueue();
+        setTokens((prevTokens) => {
+            const newTokens = prevTokens + userData?.perClick * (isBoosterActive ? 5 : 1) * touchPoints.length;
+            return isNaN(newTokens) ? prevTokens : newTokens;
+        });
 
-        const newTokens = tokens + userData?.perClick * (isBoosterActive ? 5 : 1) * touchPoints.length;
-        setTokens(newTokens);
+        processTapQueue();
     };
 
     return (
@@ -183,7 +174,6 @@ const ClickComponent: React.FC<ClickComponentProps> = ({ user, taps }) => {
                 <Link href={'/boosts'} className='text-md text-white font-semibold flex gap-[10px] items-end'>Boosts<Image src={"/icon/bolt.png"} width={25} height={25} alt="boosts" /></Link>
             </div>
             <LinearProgressWithLabel value={progress} />
-
         </div>
     );
 };
